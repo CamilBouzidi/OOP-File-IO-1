@@ -67,9 +67,8 @@ public class AuthorBibCreator {
 				oldACM.renameTo(new File(aut+"-ACMBU.json"));
 				oldNJ.renameTo(new File(aut+"-NJBU.json"));	
 			} finally {//After the json files have been dealt with.
-				for (int i=0; i<10; i++ ) {//Beginning of 2nd for loop to actually write into JSON files
 
-					//Initializing pw for each JSON doctype so that they exists outside of try-catch block.
+				//Initializing pw for each JSON doctype so that they exists outside of try-catch block.
 					PrintWriter pw1 = null;
 					PrintWriter pw2 = null;
 					PrintWriter pw3 = null;
@@ -77,6 +76,8 @@ public class AuthorBibCreator {
 					File f1Created=null;
 					File f2Created=null;
 					File f3Created=null;
+
+				for (int i=0; i<10; i++ ) {//Beginning of 2nd for loop to actually write into JSON files
 
 					try {
 						f1Created = new File(aut+"-IEEE.json");
@@ -108,7 +109,7 @@ public class AuthorBibCreator {
 						System.exit(0);
 					} finally {
 	
-						//William's to read and write into the file. Once that is done:
+						processBibFiles(aut,sc[i],pw1, pw2, pw3);
 						sc[i].close();
 						pw1.close();
 						pw2.close();
@@ -118,6 +119,14 @@ public class AuthorBibCreator {
 			}
 	}
 	
+	public static void processBibFiles(String author, Scanner scan, PrintWriter pw1, PrintWriter pw2, PrintWriter pw3){
+		//Parse the latex files for article by author
+		//When the article is found, create the three formats and record them to the correct files
+		//Only one latex file is passed at once!
+
+		//Getting the author name
+		
+	}
 	
 	//Use this method to check if a file already exists
 	public static void oldExists(File oldFile, String docType, String aut) throws FileExistsException{
