@@ -46,12 +46,12 @@ public class AuthorBibCreator {
 			System.out.println("All the files were found.");
 			//CHECKING FOR FILES AND BACKUPS
 			//Initializing all variables to null so that they exist outside of try-catch block.
-			File oldIEEE = new File("C:\\Users\\camil\\Documents\\workspace\\Assignment3\\"+aut+"-IEEE.json");
-			File tempIEEE=new File("C:\\Users\\camil\\Documents\\workspace\\Assignment3\\"+aut+"-IEEEBU.json");;
-			File oldACM= new File("C:\\Users\\camil\\Documents\\workspace\\Assignment3\\"+aut+"-ACM.json");
-			File tempACM=new File("C:\\Users\\camil\\Documents\\workspace\\Assignment3\\"+aut+"-ACMBU.json");;
-			File oldNJ=new File("C:\\Users\\camil\\Documents\\workspace\\Assignment3\\"+aut+"-NJ.json");
-			File tempNJ=new File("C:\\Users\\camil\\Documents\\workspace\\Assignment3\\"+aut+"-NJBU.json");
+			File oldIEEE = new File(aut+"-IEEE.json");
+			File tempIEEE=new File(aut+"-IEEEBU.json");;
+			File oldACM= new File(aut+"-ACM.json");
+			File tempACM=new File(aut+"-ACMBU.json");;
+			File oldNJ=new File(aut+"-NJ.json");
+			File tempNJ=new File(aut+"-NJBU.json");
 			
 			try {
 				//Checking if files already exist. Check oldExists() method.
@@ -64,19 +64,19 @@ public class AuthorBibCreator {
 				if (bUExists(tempIEEE)) {
 					oldIEEE.renameTo(tempIEEE);
 				} else {//Renaming if the backup DNE.
-					oldIEEE.renameTo(new File("C:\\Users\\camil\\Documents\\workspace\\Assignment3\\"+aut+"-IEEEBU.json"));
+					oldIEEE.renameTo(new File(aut+"-IEEEBU.json"));
 				}
 				if (bUExists(tempACM)) {
 					oldACM.renameTo(tempACM);
 				}
 				else {
-					oldACM.renameTo(new File("C:\\Users\\camil\\Documents\\workspace\\Assignment3\\"+aut+"-ACMBU.json"));
+					oldACM.renameTo(new File(aut+"-ACMBU.json"));
 				}
 				if (bUExists(tempNJ)) {
 					oldNJ.renameTo(tempNJ);
 				}
 				else {
-					oldNJ.renameTo(new File("C:\\Users\\camil\\Documents\\workspace\\Assignment3\\"+aut+"-NJBU.json"));
+					oldNJ.renameTo(new File(aut+"-NJBU.json"));
 				}
 			} finally {//After the json files have been dealt with.
 
@@ -190,10 +190,12 @@ public class AuthorBibCreator {
 				}//Once the program gets here, an entire article was parsed, or it's the wrong article(not written by aut)
 				if (goodAuthor) {
 					//writing to IEEE file!!!
+					System.out.println("============================Writing the IEEE format!!!============================");
 					pwIEEE.println(authorRefined(author, "IEEE") + ". " + "\"" + title + "\", " + journal + ", vol. " + volume 
 							+ ", no. " + number + ", p. " + pages + ", " + month +" " + year + ".");
 					System.out.println(authorRefined(author, "IEEE") + ". " + "\"" + title + "\", " + journal + ", vol. " + volume 
 							+ ", no. " + number + ", p. " + pages + ", " + month +" " + year + ".");
+					System.out.println("============================Writing the ACM format!!!============================");
 				}
 				
 			}
