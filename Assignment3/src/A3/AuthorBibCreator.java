@@ -46,25 +46,38 @@ public class AuthorBibCreator {
 			System.out.println("All the files were found.");
 			//CHECKING FOR FILES AND BACKUPS
 			//Initializing all variables to null so that they exist outside of try-catch block.
-			File oldIEEE=null;			File oldACM=null;			File oldNJ=null;
-			File tempIEEE=null;			File tempACM=null;			File tempNJ=null;
+			File oldIEEE = new File("C:\\Users\\camil\\Documents\\workspace\\Assignment3\\"+aut+"-IEEE.json");
+			File tempIEEE=new File("C:\\Users\\camil\\Documents\\workspace\\Assignment3\\"+aut+"-IEEEBU.json");;
+			File oldACM= new File("C:\\Users\\camil\\Documents\\workspace\\Assignment3\\"+aut+"-ACM.json");
+			File tempACM=new File("C:\\Users\\camil\\Documents\\workspace\\Assignment3\\"+aut+"-ACMBU.json");;
+			File oldNJ=new File("C:\\Users\\camil\\Documents\\workspace\\Assignment3\\"+aut+"-NJ.json");
+			File tempNJ=new File("C:\\Users\\camil\\Documents\\workspace\\Assignment3\\"+aut+"-NJBU.json");
 			
 			try {
 				//Checking if files already exist. Check oldExists() method.
-				oldExists(oldIEEE,"IEEE",aut);
-				oldExists(oldACM,"ACM",aut);
-				oldExists(oldNJ,"NJ",aut);
+				oldExists(oldIEEE);
+				oldExists(oldACM);
+				oldExists(oldNJ);
 			} catch (FileExistsException e2) {
 				//Checking if backup files exist. If so, they are deleted. Check bUExists() method.
-				bUExists(tempIEEE, "IEEE", aut);
-				bUExists(tempACM, "ACM", aut);
-				bUExists(tempNJ, "NJ", aut);
-				
-				//Renaming the old files to be the backups.
-				//Not sure about why they "can only be null" message here, maybe the File method is incorrect.
-				oldIEEE.renameTo(new File(aut+"-IEEEBU.json"));
-				oldACM.renameTo(new File(aut+"-ACMBU.json"));
-				oldNJ.renameTo(new File(aut+"-NJBU.json"));	
+				System.out.println(e2.getMessage());
+				if (bUExists(tempIEEE)) {
+					oldIEEE.renameTo(tempIEEE);
+				} else {//Renaming if the backup DNE.
+					oldIEEE.renameTo(new File("C:\\Users\\camil\\Documents\\workspace\\Assignment3\\"+aut+"-IEEEBU.json"));
+				}
+				if (bUExists(tempACM)) {
+					oldACM.renameTo(tempACM);
+				}
+				else {
+					oldACM.renameTo(new File("C:\\Users\\camil\\Documents\\workspace\\Assignment3\\"+aut+"-ACMBU.json"));
+				}
+				if (bUExists(tempNJ)) {
+					oldNJ.renameTo(tempNJ);
+				}
+				else {
+					oldNJ.renameTo(new File("C:\\Users\\camil\\Documents\\workspace\\Assignment3\\"+aut+"-NJBU.json"));
+				}
 			} finally {//After the json files have been dealt with.
 
 				//Initializing pw for each JSON doctype so that they exists outside of try-catch block.
@@ -192,17 +205,20 @@ public class AuthorBibCreator {
 	}
 	
 	//Use this method to check if a file already exists
-	public static void oldExists(File oldFile, String docType, String aut) throws FileExistsException{
-		oldFile = new File(aut+"-"+docType+".json");
+	public static void oldExists(File oldFile) throws FileExistsException{
 		if (oldFile.exists()) {
 			throw new FileExistsException();
 		}
 	}
 	//Use this method to see if a BACKUP file already exists
-	public static void bUExists(File temp, String docType, String aut) {
-		temp = new File(aut+"-"+docType+"BU.json");
+	public static boolean bUExists(File temp) {
 		if (temp.exists()) {
 			temp.delete();
+			return true;
+		}
+		else {
+			temp.delete();
+			return false;
 		}
 	}
 	
