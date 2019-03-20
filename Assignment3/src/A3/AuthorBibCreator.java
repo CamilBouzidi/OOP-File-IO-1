@@ -1,6 +1,5 @@
 package A3;
 import java.util.Scanner;
-import java.util.StringTokenizer;
 import java.io.PrintWriter;
 import java.io.FileOutputStream;
 import java.io.File;
@@ -22,12 +21,14 @@ import java.io.FileNotFoundException;
 //   the part where I close them at the of the 2nd for loop [they will be reopened and closed by each iteration of the for loop])
 //A) I wrote comments at the end of the 2nd for loop for where I think your stuff should go.
 //B) About what Hanna said (closing the scanner in the finally if it makes sense), I don't think it makes sense in our case because
-//   a lot of stuff has to be done before closing the scanners, but I still put everything in finally to please you, master uwu
+//   a lot of stuff has to be done before closing the scanners, but I still put everything in finally
 
 public class AuthorBibCreator {
 
 	public static void main(String[] args) {
 		Scanner kb = new Scanner(System.in);
+		int count = 0;
+		boolean foundOne = false;
 		System.out.println("Welcome to Bib Creator! Please enter the author name your are looking for: ");
 		String aut = kb.next();
 		Scanner[] sc= new Scanner[10];//Initializing Scanner outside loop
@@ -88,10 +89,7 @@ public class AuthorBibCreator {
 					File f1Created=null;
 					File f2Created=null;
 					File f3Created=null;
-//					for (int i = 0; i < sc.length; i++) {
-//						
-//						
-//					}
+					
 					try {
 						f1Created = new File(aut+"-IEEE.json");
 						//using true to make sure that the next loop for the next Latex(i) file doesn't delete what was written by the other Latex(i) files.
@@ -124,19 +122,32 @@ public class AuthorBibCreator {
 						System.exit(0);
 					} finally {
 						for (int j = 0; j < sc.length; j++) {
-							processBibFiles(aut,sc[j],pwIEEE, pwACM, pwNJ);
+							count = processBibFiles(aut,sc[j],pwIEEE, pwACM, pwNJ, count);
+							if (count!=0) {
+								foundOne=true;
+							}
 							sc[j].close();
+						}
+						
+						if (!foundOne) {
+							//Must close the print writer before deleting the file
+							System.out.println("Author not found!");
+							pwIEEE.close();
+							pwACM.close();
+							pwNJ.close();
+							f1Created.delete();
+							f2Created.delete();
+							f3Created.delete();
 						}
 						
 						pwIEEE.close();
 						pwACM.close();
 						pwNJ.close();
 					}
-					
 			}
 	}
 	
-	public static void processBibFiles(String aut, Scanner scan, PrintWriter pwIEEE, PrintWriter pwACM, PrintWriter pwNJ){
+	public static int processBibFiles(String aut, Scanner scan, PrintWriter pwIEEE, PrintWriter pwACM, PrintWriter pwNJ, int counter){
 		//Parse the latex files for article by author
 		//When the article is found, create the three formats and record them to the correct files
 		//Only one latex file is parsed at once!
@@ -144,7 +155,7 @@ public class AuthorBibCreator {
 		String line="";		String content ="";
 		String author ="";		String journal = "";		String title = "";		String year = "";
 		String volume = "";		String number = "";		String pages = "";		String keywords = "";
-		String issn = "";		String month = "";
+		String issn = "";		String month = "";		String doi = "";
 		
 		String authorR ="";		String journalR = "";		String titleR = "";		String yearR = "";
 		String volumeR = "";		String numberR = "";		String pagesR = "";		String keywordsR = "";
@@ -165,6 +176,7 @@ public class AuthorBibCreator {
 							goodAuthor=false;
 						} else {
 							goodAuthor=true;
+							counter++;
 							author = extract(line);
 						}
 					} else if (line.contains("journal")) {
@@ -185,25 +197,29 @@ public class AuthorBibCreator {
 						issn = extract(line);
 					} else if (line.contains("month")) {
 						month = extract(line);
+					} else if (line.contains("doi")) {
+						doi = extract(line);
 					}
 					line = scan.nextLine().trim();
 				}//Once the program gets here, an entire article was parsed, or it's the wrong article(not written by aut)
+				
 				if (goodAuthor) {
 					//writing to IEEE file!!!
-					System.out.println("============================Writing the IEEE format!!!============================");
 					pwIEEE.println(authorRefined(author, "IEEE") + ". " + "\"" + title + "\", " + journal + ", vol. " + volume 
-							+ ", no. " + number + ", p. " + pages + ", " + month +" " + year + ".");
+							+ ", no. " + number + ", p. " + pages + ", " + month +" " + year + ".\n");
 					System.out.println(authorRefined(author, "IEEE") + ". " + "\"" + title + "\", " + journal + ", vol. " + volume 
 							+ ", no. " + number + ", p. " + pages + ", " + month +" " + year + ".");
-					System.out.println("============================Writing the ACM format!!!============================");
+					pwACM.println("["+counter+"]\t" + authorRefined(author, "ACM") + year + ". " +  title + ". " + journal
+							+ ". " + volume + ", " + number + " (" + year + "), " + pages + ". DOI:https://doi.org/" + doi + ".");
+					System.out.println("["+counter+"]\t" + authorRefined(author, "ACM") + year + ". " +  title + ". " + journal
+							+ ". " + volume + ", " + number + " (" + year + "), " + pages + ". DOI:https://doi.org/" + doi + ".");
 				}
 				
 			}
-			
-			//gets here if it's done reading the bib file or there's nothing in the file
-			//Note: the article can be written to the file in one line
 		}
-		
+		//gets here if it's done reading the bib file or there's nothing in the file
+		//Note: the article can be written to the file in one line
+		return counter;
 	}
 	
 	//Use this method to check if a file already exists
@@ -235,7 +251,11 @@ public class AuthorBibCreator {
 			result+=authors[authors.length-1];
 			return result;
 		case "ACM":
-			return result;
+			if (authors.length == 1) {
+				return authors[0]+ ". ";
+			} else {
+				return authors[0] + " et al. ";
+			}
 		case "NJ":
 			return result;
 		default:
