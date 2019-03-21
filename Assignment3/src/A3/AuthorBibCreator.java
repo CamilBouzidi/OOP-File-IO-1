@@ -23,22 +23,55 @@ import java.io.FileNotFoundException;
 //B) About what Hanna said (closing the scanner in the finally if it makes sense), I don't think it makes sense in our case because
 //   a lot of stuff has to be done before closing the scanners, but I still put everything in finally
 
+/**
+ * This is the AuthorBibCreator class created for Assignment 3.
+ * The user inputs the name of an author, all bib files are parsed, and the articles written by the chosen author are written in three
+ * different formats in 3 different files.
+ * @author Morin-Laberge, William (ID #40097269), and Bouzidi, Camil (ID #40099611)
+ * @version 5.0
+ * COMP 249 
+ * Assignment #3
+ * March 21 2019
+ */
+
 public class AuthorBibCreator {
 
 	public static void main(String[] args) {
 		Scanner kb = new Scanner(System.in);
+		int validFiles=0;
 		int count = 0;
 		boolean foundOne = false;
 		System.out.println("Welcome to Bib Creator! Please enter the author name your are looking for: ");
 		String aut = kb.next();
-		Scanner[] sc= new Scanner[10];//Initializing Scanner outside loop
+		aut = aut.substring(0, 1).toUpperCase() + aut.substring(1);
 		kb.close();//kb unnecessary from here on out.
 		
-		for (int i=0; i<10; i++) {//For Loop #1: Loop for each Latex file from Latex1 to Latex10. Going through the files and finding articles with wanted author.
+		File dir = new File("toParse");
+		
+		String[] fileNames = dir.list();
+		
+		for (int i = 0; i < fileNames.length; i++) {
+			if (fileNames[i].contains(".bib")) {
+				validFiles++;
+			}
+		}
+		
+		String toRead[] = new String[validFiles];
+		
+		int d = 0;
+		for (int i = 0; i < fileNames.length; i++) {
+			if (fileNames[i].contains(".bib")) {
+				toRead[d++] = fileNames[i];
+			}
+		}
+		
+		
+		Scanner[] sc= new Scanner[toRead.length];//Initializing Scanner outside loop
+		for (int i=0; i<toRead.length; i++) {//For Loop #1: Loop for each Latex file from Latex1 to Latex10. Going through the files and finding articles with wanted author.
 			try {
-				sc[i] = new Scanner(new FileInputStream("Latex"+(i+1)+".bib"));
+				sc[i] = new Scanner(new FileInputStream("toParse\\"+toRead[i]));
 			}catch (FileNotFoundException e1){
-				System.out.println("Could not open input file Latex"+(i+1)+".bib for reading.\r\n" + 
+				System.out.println("Could not open input file " + toRead[i] + " for reading.\r\n" + 
 						"Please check if file exists! Program will terminate after closing any opened files.");
 				sc[i].close(); //Closing just in case here, can't do it in a finally block because still need the scanner (nothing has been scanned yet)
 				System.exit(0);
@@ -140,6 +173,10 @@ public class AuthorBibCreator {
 							f3Created.delete();
 						}
 						
+						System.out.println("\nA total of " + count + " records were found for author(s) with name: " + aut);
+						System.out.println("Files "+aut+"-IEEE.json, "+aut+"-ACM.json, "+aut+"-NJ.json have been created!\n");
+						System.out.println("All is done and good, enjoy your freshly created files!");
+						
 						pwIEEE.close();
 						pwACM.close();
 						pwNJ.close();
@@ -147,6 +184,15 @@ public class AuthorBibCreator {
 			}
 	}
 	
+	
+	/**
+	 * @param aut: the name of the chosen author
+	 * @param scan: the Scanner object used for a specific bib file 
+	 * @param pwIEEE: PrintWriter to write the article in the IEEE format in the IEEE file
+	 * @param pwACM: PrintWriter to write the article in the ACM format in the ACM file
+	 * @param pwNJ: PrintWriter to write the article in the NJ format in the NJ file
+	 * @return counter: number of articles written by the chosen author
+	 */
 	public static int processBibFiles(String aut, Scanner scan, PrintWriter pwIEEE, PrintWriter pwACM, PrintWriter pwNJ, int counter){
 		//Parse the latex files for article by author
 		//When the article is found, create the three formats and record them to the correct files
@@ -156,10 +202,6 @@ public class AuthorBibCreator {
 		String author ="";		String journal = "";		String title = "";		String year = "";
 		String volume = "";		String number = "";		String pages = "";		String keywords = "";
 		String issn = "";		String month = "";		String doi = "";
-		
-		String authorR ="";		String journalR = "";		String titleR = "";		String yearR = "";
-		String volumeR = "";		String numberR = "";		String pagesR = "";		String keywordsR = "";
-		String issnR = "";		String monthR = "";
 		
 		//Reading the file until there's nothing
 		while (scan.hasNextLine()) {
@@ -210,9 +252,11 @@ public class AuthorBibCreator {
 					System.out.println(authorRefined(author, "IEEE") + ". " + "\"" + title + "\", " + journal + ", vol. " + volume 
 							+ ", no. " + number + ", p. " + pages + ", " + month +" " + year + ".");
 					pwACM.println("["+counter+"]\t" + authorRefined(author, "ACM") + year + ". " +  title + ". " + journal
-							+ ". " + volume + ", " + number + " (" + year + "), " + pages + ". DOI:https://doi.org/" + doi + ".");
+							+ ". " + volume + ", " + number + " (" + year + "), " + pages + ". DOI:https://doi.org/" + doi + ".\n");
 					System.out.println("["+counter+"]\t" + authorRefined(author, "ACM") + year + ". " +  title + ". " + journal
 							+ ". " + volume + ", " + number + " (" + year + "), " + pages + ". DOI:https://doi.org/" + doi + ".");
+					pwNJ.println(authorRefined(author, "NJ") + ". " + title + ". " + journal + ". " + volume + ", " + pages + "("+ year + ").\n");
+					System.out.println(authorRefined(author, "NJ") + ". " + title + ". " + journal + ". " + volume + ", " + pages + "("+ year + ").");
 				}
 				
 			}
@@ -222,13 +266,22 @@ public class AuthorBibCreator {
 		return counter;
 	}
 	
-	//Use this method to check if a file already exists
+	/**
+	 * Use this method to check if a file already exists
+	 * @param oldFile: similar file previously created
+	 * @throws FileExistsException
+	 * @return void
+	 */
 	public static void oldExists(File oldFile) throws FileExistsException{
 		if (oldFile.exists()) {
 			throw new FileExistsException();
 		}
 	}
-	//Use this method to see if a BACKUP file already exists
+	/**
+	 * Use this method to see if a BACKUP file already exists
+	 * @param temp: backup file that might exist
+	 * @return boolean
+	 */
 	public static boolean bUExists(File temp) {
 		if (temp.exists()) {
 			temp.delete();
@@ -239,7 +292,12 @@ public class AuthorBibCreator {
 			return false;
 		}
 	}
-	
+	/**
+	 * Use this method to reformat an article's author field
+	 * @param author: the author field in the article
+	 * @param format: the way the author field should be formated
+	 * @return String: correctly formated author field
+	 */
 	public static String authorRefined(String author, String format) {
 		String[] authors = author.split(" and ");
 		String result ="";
@@ -257,14 +315,26 @@ public class AuthorBibCreator {
 				return authors[0] + " et al. ";
 			}
 		case "NJ":
+			if (author.length() ==1) {
+				return authors[0];
+			} else {
+				for (int i = 0; i < authors.length-1; i++) {
+					result+= authors[i] + " & ";
+				}
+				result += authors[authors.length-1];
+			}
+			
 			return result;
 		default:
 			return "Data processing error in authorRefined!";
 		}
 		
 	}
-	
-	//Used to extract the contents of each line
+	/**
+	 * Used to extract the contents of each line
+	 * @param line: a line in an article
+	 * @return String: what is found in between {} of the line
+	 */
 	public static String extract(String line) {
 		//must add 1 to the first index, because we want the string after it
 		return line.substring(line.indexOf("{")+1, line.indexOf("}"));
